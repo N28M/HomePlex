@@ -1,5 +1,5 @@
 <!-- Home Pi -->
-This repo documents the complete setup and configuration of my raspberry pi home lab.
+This repo documents the complete setup and configuration of my home server.
 
 Current Hardware
     1. Raspberry Pi 4 8Gb
