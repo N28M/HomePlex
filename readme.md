@@ -1,5 +1,5 @@
 <!-- Home Plex -->
-This repo documents the complete setup and configuration of my home server.
+This repo documents the complete setup and configuration of my home server. As it stands, the servers are "snowflakes" with little to no documentation and the intention of this repo is to change that. 
 
 Current Hardware
 
