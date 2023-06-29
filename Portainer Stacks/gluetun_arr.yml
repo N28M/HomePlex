@@ -1,0 +1,126 @@
+version: "3"
+services:
+  gluetun:
+    image: qmcgaw/gluetun
+    hostname: gluetun
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      #Uncomment appropriate vpn config, more information at the gluetun wiki.
+
+      #Surfshark
+      #- VPN_SERVICE_PROVIDER=surfshark
+      #- VPN_TYPE=wireguard
+      #- WIREGUARD_PRIVATE_KEY= #<private key here>
+      #- WIREGUARD_ADDRESSES=10.64.222.21/16 #<Update this address based on wireguard config>
+      #- SERVER_COUNTRIES=Netherlands
+
+      #Nord
+      #- VPN_SERVICE_PROVIDER=nordvpn
+      #- OPENVPN_USER= #<User ID>
+      #- OPENVPN_PASSWORD= #<Password>
+      #- SERVER_COUNTRIES=Netherlands
+      #- TZ=Asia/Kolkata
+      #- BLOCK_SURVEILLANCE=on
+      #- BLOCK_ADS=on
+
+      #Mullvad
+      #- VPN_SERVICE_PROVIDER=mullvad
+      #- VPN_TYPE=wireguard
+      #- WIREGUARD_PRIVATE_KEY= #<private key here>
+      #- WIREGUARD_ADDRESSES= #<Update this address based on wireguard config>
+      #- SERVER_CITIES=Gothenburg
+    ports:
+      #Most ports are default, but custom ports can be defined here (eg. qbittorrent and radarr4k)
+
+      - 8585:8585/tcp #qbittorrent
+      - 5055:5055/tcp #overseer
+      - 7878:7878/tcp #radarr
+      - 7979:7878/tcp #radarr4k
+      - 9696:9696/tcp #prowlar
+      - 8989:8989/tcp #sonarr
+  
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=1000 # User ID to run as
+      - PGID=1000 # Group ID to run as
+      - TZ=Asia/Kolkata # Specify a timezone to use
+      - WEBUI_PORT=8585 # optional 
+    volumes:
+      - /mnt/storage/docker/qbittorrent/config:/config
+      - /mnt/storage/Data/Download/Torrents:/downloads
+      - /mnt/storage/docker/qbittorrent/vuetorrent:/vuetorrent
+    restart: unless-stopped
+  
+  overseerr:
+    image: linuxserver/overseerr:latest
+    container_name: overseerr
+    network_mode: "service:gluetun"
+    restart: unless-stopped
+    environment:
+      - TZ=Asia/Kolkata
+      - PUID=1000
+      - PGID=1000
+    volumes:
+      - /mnt/storage/docker/overseer/config:/config
+
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Kolkata
+    volumes:
+      - /mnt/storage/docker/prowlarr/config:/config
+    restart: unless-stopped
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Kolkata
+    volumes:
+      - /mnt/storage/docker/radarr/config:/config
+      - /mnt/storage/Data/Media/Movies/1080p:/movies #optional
+      - /mnt/storage/Data/Download/Torrents:/downloads #optional
+    restart: unless-stopped
+
+  radarr4k:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr4k
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Kolkata
+    ports:
+      - 7777:7878
+    volumes:
+      - /mnt/storage/docker/radarr4k/config:/config
+      - /mnt/storage/Data/Media/Movies/2160p:/movies #optional
+      - /mnt/storage/Data/Download/Torrents:/downloads #optional
+    restart: unless-stopped
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Kolkata
+    volumes:
+      - /mnt/storage/docker/sonarr/config:/config
+      - /mnt/storage/Data/Media/TV:/tv #optional
+      - /mnt/storage/Data/Download/Torrents:/downloads #optional
+    restart: unless-stopped
